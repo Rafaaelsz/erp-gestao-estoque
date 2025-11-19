@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Histórico - {{ produto.nome }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+    <div class="container mx-auto mt-10 max-w-4xl">
+        
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">Histórico de Movimentações</h2>
+                <p class="text-gray-500">Produto: <span class="font-bold">{{ produto.nome }}</span></p>
+            </div>
+            <a href="{% url 'dashboard' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
+                Voltar
+            </a>
+        </div>
+
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <table class="min-w-full leading-normal">
+                <thead>
+                    <tr class="bg-gray-800 text-white">
+                        <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider">Data/Hora</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider">Tipo</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider">Usuário</th>
+                        <th class="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider">Qtd</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mov in movimentacoes %}
+                    <tr class="border-b border-gray-200 hover:bg-gray-50">
+                        <td class="px-5 py-4 text-sm">
+                            <p class="text-gray-900 whitespace-no-wrap">{{ mov.data|date:"d/m/Y H:i" }}</p>
+                        </td>
+                        <td class="px-5 py-4 text-sm">
+                            {% if mov.tipo == 'E' %}
+                                <span class="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
+                                    <span aria-hidden class="absolute inset-0 bg-green-200 opacity-50 rounded-full"></span>
+                                    <span class="relative">Entrada</span>
+                                </span>
+                            {% else %}
+                                <span class="relative inline-block px-3 py-1 font-semibold text-red-900 leading-tight">
+                                    <span aria-hidden class="absolute inset-0 bg-red-200 opacity-50 rounded-full"></span>
+                                    <span class="relative">Saída</span>
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-5 py-4 text-sm text-gray-600">
+                            {{ mov.usuario.username }}
+                        </td>
+                        <td class="px-5 py-4 text-sm text-center font-bold">
+                            {% if mov.tipo == 'E' %}
+                                <span class="text-green-600">+{{ mov.quantidade }}</span>
+                            {% else %}
+                                <span class="text-red-600">-{{ mov.quantidade }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-6 text-gray-500">Nenhuma movimentação registrada.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestão de Estoque</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+
+   <nav class="flex items-center justify-between flex-wrap bg-gray-800 p-6">
+        <div class="flex items-center flex-shrink-0 text-white mr-6">
+            <span class="font-semibold text-xl tracking-tight">📦 Sistema de Estoque</span>
+        </div>
+        <div class="flex items-center text-white">
+            <span class="mr-4 text-sm text-gray-300">Olá, {{ user.username }}</span>
+            
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-gray-800 hover:bg-white mt-4 lg:mt-0 transition duration-300">
+                    Sair
+                </button>
+            </form>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 mt-8">
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-blue-500 rounded-lg shadow-lg p-6 text-white">
+                <h3 class="text-lg font-bold mb-2">Tipos de Produtos</h3>
+                <p class="text-4xl font-bold">{{ total_produtos }}</p>
+            </div>
+
+            <div class="bg-green-500 rounded-lg shadow-lg p-6 text-white">
+                <h3 class="text-lg font-bold mb-2">Peças em Estoque</h3>
+                <p class="text-4xl font-bold">{{ total_itens }}</p>
+            </div>
+
+            <div class="bg-yellow-500 rounded-lg shadow-lg p-6 text-white">
+                <h3 class="text-lg font-bold mb-2">Valor Total</h3>
+                <p class="text-4xl font-bold">R$ {{ valor_estoque }}</p>
+            </div>
+        </div>
+
+       <div class="flex flex-col md:flex-row justify-between items-center mb-6 mt-8 gap-4">
+            
+            <h3 class="text-xl font-bold text-gray-700">Listagem de Produtos</h3>
+            
+            <div class="flex gap-2 w-full md:w-auto">
+                <form method="get" class="flex gap-2 w-full md:w-auto">
+                    <input type="text" 
+                           name="q" 
+                           value="{{ query }}"
+                           placeholder="Buscar por nome..." 
+                           class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 w-full md:w-64">
+                    
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                        🔍
+                    </button>
+                    
+                    {% if query %}
+                    <a href="{% url 'dashboard' %}" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center">
+                        X
+                    </a>
+                    {% endif %}
+                </form>
+
+                <a href="{% url 'adicionar_produto' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded whitespace-nowrap">
+                    + Novo
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-white shadow-md rounded my-6 overflow-x-auto">
+
+            <table class="min-w-full table-auto">
+                <thead>
+                    <tr class="bg-gray-800 text-white uppercase text-sm leading-normal">
+                        <th class="py-3 px-6 text-left">Status</th> <th class="py-3 px-6 text-left">Produto</th>
+                        <th class="py-3 px-6 text-center">Qtd</th>
+                        <th class="py-3 px-6 text-center">Custo</th>
+                        <th class="py-3 px-6 text-center">Venda</th>
+                        <th class="py-3 px-6 text-center">Lucro</th> <th class="py-3 px-6 text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-700 text-sm">
+                    {% for produto in produtos %}
+                    <tr class="border-b border-gray-200 hover:bg-gray-50 transition duration-150">
+                        
+                        <td class="py-3 px-6 text-left">
+                            <span class="{{ produto.status_estoque.classe }} py-1 px-3 rounded-full text-xs font-bold border shadow-sm">
+                                {{ produto.status_estoque.texto }}
+                            </span>
+                        </td>
+
+                        <td class="py-3 px-6 text-left font-medium text-gray-900">{{ produto.nome }}</td>
+                        
+                        <td class="py-3 px-6 text-center font-bold {% if produto.quantidade < 5 %}text-red-600{% endif %}">
+                            {{ produto.quantidade }}
+                        </td>
+
+                        <td class="py-3 px-6 text-center text-gray-500">R$ {{ produto.preco_custo }}</td>
+                        <td class="py-3 px-6 text-center text-blue-600 font-bold">R$ {{ produto.preco_venda }}</td>
+                        
+                        <td class="py-3 px-6 text-center">
+                            <div class="flex flex-col">
+                                <span class="text-green-600 font-bold">R$ {{ produto.lucro }}</span>
+                                <span class="text-xs text-gray-400">({{ produto.margem }}%)</span>
+                            </div>
+                        </td>
+
+                        <td class="py-3 px-6 text-center">
+                            <div class="flex item-center justify-center gap-2">
+                                <a href="{% url 'editar_produto' produto.id %}" class="text-yellow-500 hover:text-yellow-600 transform hover:scale-110">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                    </svg>
+                                </a>
+                                <a href="{% url 'deletar_produto' produto.id %}" onclick="return confirm('Excluir?')" class="text-red-500 hover:text-red-600 transform hover:scale-110">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-gray-500">Nenhum produto encontrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</body>
+</html>
