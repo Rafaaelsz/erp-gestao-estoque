@@ -1,5 +1,5 @@
 from django import forms
-from .models import Produto, Movimentacao
+from .models import Produto, Movimentacao, Categoria
 
 
 class ProdutoForm(forms.ModelForm):
@@ -26,4 +26,17 @@ class MovimentacaoForm(forms.ModelForm):
         widgets = {
             'tipo': forms.Select(attrs={'class': 'w-full p-2 border rounded mb-4 bg-white'}),
             'quantidade': forms.NumberInput(attrs={'class': 'w-full p-2 border rounded mb-4'}),
+        }
+
+
+class CategoriaForm(forms.ModelForm):
+    class Meta:
+        model = Categoria
+        fields = ['nome']
+
+        widgets = {
+            'nome': forms.TextInput(attrs={
+                'class': 'w-full p-2 border rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400',
+                'placeholder': 'Ex: Eletrônicos, Limpeza...'
+            }),
         }

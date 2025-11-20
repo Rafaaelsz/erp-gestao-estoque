@@ -1,0 +1,81 @@
+{% extends 'estoque/base.html' %}
+
+{% block header %}Gerenciar Categorias{% endblock %}
+
+{% block content %}
+<div class="container mx-auto max-w-4xl">
+    
+    <!-- Cabeçalho da Tabela -->
+    <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-gray-700">Categorias Cadastradas</h3>
+        <a href="{% url 'adicionar_categoria' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition shadow-md">
+            <i class="fas fa-plus"></i> Nova Categoria
+        </a>
+    </div>
+
+    <!-- Tabela -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <table class="min-w-full leading-normal">
+            <thead>
+                <tr class="bg-gray-800 text-white text-sm uppercase">
+                    <th class="px-5 py-3 text-left">Nome da Categoria</th>
+                    <th class="px-5 py-3 text-center w-40">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="text-gray-700 text-sm">
+                {% for categoria in categorias %}
+                <tr class="border-b border-gray-200 hover:bg-gray-50 transition duration-150">
+                    <td class="px-5 py-4 font-medium text-gray-900 flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs">
+                            <i class="fas fa-tag"></i>
+                        </div>
+                        {{ categoria.nome }}
+                    </td>
+                    <td class="px-5 py-4 text-center">
+                        <div class="flex item-center justify-center gap-4">
+                            <!-- Botão Editar -->
+                            <a href="{% url 'editar_categoria' categoria.id %}" class="text-yellow-500 hover:text-yellow-700 transform hover:scale-110 transition" title="Editar">
+                                <i class="fas fa-edit text-lg"></i>
+                            </a>
+                            
+                            <!-- Botão Excluir (Com SweetAlert) -->
+                            <button onclick="confirmarExclusaoCategoria('{{ categoria.id }}', '{{ categoria.nome }}')" class="text-red-500 hover:text-red-700 transform hover:scale-110 transition" title="Excluir">
+                                <i class="fas fa-trash text-lg"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="2" class="text-center py-8 text-gray-500">
+                        <i class="fas fa-tags text-4xl mb-2 text-gray-300"></i><br>
+                        Nenhuma categoria cadastrada.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Script Específico desta página -->
+<script>
+    function confirmarExclusaoCategoria(id, nome) {
+        Swal.fire({
+            title: 'Excluir Categoria?',
+            text: `A categoria "${nome}" será apagada. Produtos nela ficarão "Sem Categoria".`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sim, excluir',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = `/categorias/deletar/${id}/`;
+            }
+        })
+    }
+</script>
+{% endblock %}

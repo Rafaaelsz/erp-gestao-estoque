@@ -4,15 +4,14 @@ from django.db.models import Sum, F, Count
 from django.http import HttpResponse
 from django.template.loader import get_template
 from xhtml2pdf import pisa
-from .models import Produto, Movimentacao
-from .forms import ProdutoForm, MovimentacaoForm
+from .models import Produto, Movimentacao, Categoria
+from .forms import ProdutoForm, MovimentacaoForm, CategoriaForm
 from django.contrib import messages
 
 
 @login_required
 def dashboard(request):
     produtos = Produto.objects.all()
-
     query = request.GET.get('q')
     if query:
         produtos = produtos.filter(nome__icontains=query)
@@ -22,7 +21,6 @@ def dashboard(request):
     valor_estoque = produtos.aggregate(
         total=Sum(F('quantidade') * F('preco_venda')))['total'] or 0
 
-    # Dados para Gráfico
     por_categoria = produtos.values(
         'categoria__nome').annotate(total=Sum('quantidade'))
     cat_labels = [item['categoria__nome']
@@ -50,6 +48,7 @@ def adicionar_produto(request):
             produto = form.save(commit=False)
             produto.usuario = request.user
             produto.save()
+            messages.success(request, 'Produto adicionado com sucesso!')
             return redirect('dashboard')
     else:
         form = ProdutoForm()
@@ -63,6 +62,7 @@ def editar_produto(request, id):
         form = ProdutoForm(request.POST, request.FILES, instance=produto)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Produto atualizado com sucesso!')
             return redirect('dashboard')
     else:
         form = ProdutoForm(instance=produto)
@@ -73,13 +73,13 @@ def editar_produto(request, id):
 def deletar_produto(request, id):
     produto = get_object_or_404(Produto, id=id)
     produto.delete()
+    messages.success(request, 'Produto excluído com sucesso!')
     return redirect('dashboard')
 
 
 @login_required
 def movimentar_produto(request, id):
     produto = get_object_or_404(Produto, id=id)
-
     if request.method == 'POST':
         form = MovimentacaoForm(request.POST)
         if form.is_valid():
@@ -89,17 +89,22 @@ def movimentar_produto(request, id):
 
             if movimentacao.tipo == 'E':
                 produto.quantidade += movimentacao.quantidade
+                messages.success(
+                    request, f'Entrada de {movimentacao.quantidade} itens realizada!')
             elif movimentacao.tipo == 'S':
                 if produto.quantidade < movimentacao.quantidade:
+                    messages.error(
+                        request, 'Erro: Saldo insuficiente para essa saída.')
                     return render(request, 'estoque/movimentar_produto.html', {'form': form, 'produto': produto, 'erro': 'Saldo insuficiente!'})
                 produto.quantidade -= movimentacao.quantidade
+                messages.success(
+                    request, f'Saída de {movimentacao.quantidade} itens realizada!')
 
             produto.save()
             movimentacao.save()
             return redirect('dashboard')
     else:
         form = MovimentacaoForm()
-
     return render(request, 'estoque/movimentar_produto.html', {'form': form, 'produto': produto})
 
 
@@ -127,26 +132,58 @@ def lista_movimentacoes(request):
 @login_required
 def relatorio_pdf(request):
     produtos = Produto.objects.all().order_by('nome')
-
     total_itens = produtos.aggregate(Sum('quantidade'))['quantidade__sum'] or 0
     valor_estoque = produtos.aggregate(
         total=Sum(F('quantidade') * F('preco_venda')))['total'] or 0
-
     template_path = 'estoque/relatorio_pdf.html'
-    context = {
-        'produtos': produtos,
-        'total_itens': total_itens,
-        'valor_estoque': valor_estoque,
-    }
-
+    context = {'produtos': produtos, 'total_itens': total_itens,
+               'valor_estoque': valor_estoque}
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'inline; filename="relatorio_estoque.pdf"'
-
     template = get_template(template_path)
     html = template.render(context)
-
     pisa_status = pisa.CreatePDF(html, dest=response)
-
     if pisa_status.err:
         return HttpResponse('Erro ao gerar PDF <pre>' + html + '</pre>')
     return response
+
+
+@login_required
+def lista_categorias(request):
+    categorias = Categoria.objects.all().order_by('nome')
+    return render(request, 'estoque/lista_categorias.html', {'categorias': categorias})
+
+
+@login_required
+def adicionar_categoria(request):
+    if request.method == 'POST':
+        form = CategoriaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Categoria criada com sucesso!')
+            return redirect('lista_categorias')
+    else:
+        form = CategoriaForm()
+    return render(request, 'estoque/categoria_form.html', {'form': form})
+
+
+@login_required
+def editar_categoria(request, id):
+    categoria = get_object_or_404(Categoria, id=id)
+    if request.method == 'POST':
+        form = CategoriaForm(request.POST, instance=categoria)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Categoria atualizada com sucesso!')
+            return redirect('lista_categorias')
+    else:
+        form = CategoriaForm(instance=categoria)
+    return render(request, 'estoque/categoria_form.html', {'form': form})
+
+
+@login_required
+def deletar_categoria(request, id):
+    categoria = get_object_or_404(Categoria, id=id)
+    categoria.delete()
+    messages.success(request, 'Categoria excluída com sucesso!')
+    return redirect('lista_categorias')

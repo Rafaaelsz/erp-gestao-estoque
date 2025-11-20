@@ -1,0 +1,46 @@
+{% extends 'estoque/base.html' %}
+
+{% block header %}
+    {% if form.instance.pk %}Editar Categoria{% else %}Nova Categoria{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto bg-white shadow-lg rounded-lg p-8 mt-10">
+    
+    <!-- Ícone e Título -->
+    <div class="text-center mb-8 border-b pb-6">
+        <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-sm">
+            <i class="fas fa-tag"></i>
+        </div>
+        <h2 class="text-xl font-bold text-gray-800">
+            {% if form.instance.pk %}Editar "{{ form.instance.nome }}"{% else %}Cadastrar Categoria{% endif %}
+        </h2>
+        <p class="text-gray-500 text-sm mt-1">Organize seus produtos por grupos.</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="mb-6">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Nome da Categoria</label>
+            {{ form.nome }}
+            
+            <!-- Exibe erros de validação -->
+            {% if form.nome.errors %}
+                {% for error in form.nome.errors %}
+                    <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="flex gap-3 mt-8">
+            <a href="{% url 'lista_categorias' %}" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 rounded-lg text-center transition duration-200">
+                Cancelar
+            </a>
+            <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition duration-200 shadow-md">
+                Salvar
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -20,6 +20,13 @@ urlpatterns = [
     path('produto/<int:id>/', views.detalhes_produto, name='detalhes_produto'),
     path('movimentacoes/', views.lista_movimentacoes, name='lista_movimentacoes'),
     path('relatorio-pdf/', views.relatorio_pdf, name='relatorio_pdf'),
+    path('categorias/', views.lista_categorias, name='lista_categorias'),
+    path('categorias/adicionar/', views.adicionar_categoria,
+         name='adicionar_categoria'),
+    path('categorias/editar/<int:id>/',
+         views.editar_categoria, name='editar_categoria'),
+    path('categorias/deletar/<int:id>/',
+         views.deletar_categoria, name='deletar_categoria'),
 ]
 
 if settings.DEBUG:
