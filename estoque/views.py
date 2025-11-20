@@ -1,29 +1,30 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, F, Count
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 from .models import Produto, Movimentacao
 from .forms import ProdutoForm, MovimentacaoForm
+from django.contrib import messages
 
 
 @login_required
 def dashboard(request):
     produtos = Produto.objects.all()
 
-    # Lógica de Busca
     query = request.GET.get('q')
     if query:
         produtos = produtos.filter(nome__icontains=query)
 
-    # Cálculos
     total_produtos = produtos.count()
     total_itens = produtos.aggregate(Sum('quantidade'))['quantidade__sum'] or 0
     valor_estoque = produtos.aggregate(
-        total=Sum(F('quantidade') * F('preco_venda'))
-    )['total'] or 0
+        total=Sum(F('quantidade') * F('preco_venda')))['total'] or 0
 
+    # Dados para Gráfico
     por_categoria = produtos.values(
         'categoria__nome').annotate(total=Sum('quantidade'))
-
     cat_labels = [item['categoria__nome']
                   for item in por_categoria if item['categoria__nome']]
     cat_data = [item['total']
@@ -86,15 +87,11 @@ def movimentar_produto(request, id):
             movimentacao.produto = produto
             movimentacao.usuario = request.user
 
-            if movimentacao.tipo == 'E':  # Entrada
+            if movimentacao.tipo == 'E':
                 produto.quantidade += movimentacao.quantidade
-            elif movimentacao.tipo == 'S':  # Saída
+            elif movimentacao.tipo == 'S':
                 if produto.quantidade < movimentacao.quantidade:
-                    return render(request, 'estoque/movimentar_produto.html', {
-                        'form': form,
-                        'produto': produto,
-                        'erro': 'Saldo insuficiente em estoque!'
-                    })
+                    return render(request, 'estoque/movimentar_produto.html', {'form': form, 'produto': produto, 'erro': 'Saldo insuficiente!'})
                 produto.quantidade -= movimentacao.quantidade
 
             produto.save()
@@ -111,11 +108,7 @@ def historico_produto(request, id):
     produto = get_object_or_404(Produto, id=id)
     movimentacoes = Movimentacao.objects.filter(
         produto=produto).select_related('usuario').order_by('-data')
-
-    return render(request, 'estoque/historico.html', {
-        'produto': produto,
-        'movimentacoes': movimentacoes
-    })
+    return render(request, 'estoque/historico.html', {'produto': produto, 'movimentacoes': movimentacoes})
 
 
 @login_required
@@ -129,3 +122,31 @@ def lista_movimentacoes(request):
     movimentacoes = Movimentacao.objects.all().select_related(
         'produto', 'usuario').order_by('-data')
     return render(request, 'estoque/lista_movimentacoes.html', {'movimentacoes': movimentacoes})
+
+
+@login_required
+def relatorio_pdf(request):
+    produtos = Produto.objects.all().order_by('nome')
+
+    total_itens = produtos.aggregate(Sum('quantidade'))['quantidade__sum'] or 0
+    valor_estoque = produtos.aggregate(
+        total=Sum(F('quantidade') * F('preco_venda')))['total'] or 0
+
+    template_path = 'estoque/relatorio_pdf.html'
+    context = {
+        'produtos': produtos,
+        'total_itens': total_itens,
+        'valor_estoque': valor_estoque,
+    }
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="relatorio_estoque.pdf"'
+
+    template = get_template(template_path)
+    html = template.render(context)
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+
+    if pisa_status.err:
+        return HttpResponse('Erro ao gerar PDF <pre>' + html + '</pre>')
+    return response

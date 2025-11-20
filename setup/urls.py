@@ -19,6 +19,7 @@ urlpatterns = [
     path('historico/<int:id>/', views.historico_produto, name='historico_produto'),
     path('produto/<int:id>/', views.detalhes_produto, name='detalhes_produto'),
     path('movimentacoes/', views.lista_movimentacoes, name='lista_movimentacoes'),
+    path('relatorio-pdf/', views.relatorio_pdf, name='relatorio_pdf'),
 ]
 
 if settings.DEBUG:

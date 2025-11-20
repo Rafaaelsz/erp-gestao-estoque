@@ -113,9 +113,9 @@
                         <p class="text-gray-500">Seu estoque possui <strong class="text-blue-600">{{ total_produtos }}</strong> produtos.</p>
                         <p class="text-gray-500 mt-2">Valor total acumulado:</p>
                         <p class="text-4xl font-bold text-green-600 mt-2">R$ {{ valor_estoque }}</p>
-                        <button class="mt-6 px-6 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 transition">
-                            Gerar Relatório
-                        </button>
+                        <a href="{% url 'relatorio_pdf' %}" target="_blank" class="mt-6 px-6 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 transition flex items-center gap-2">
+                            <i class="fas fa-file-pdf"></i> Gerar Relatório PDF
+                        </a>
                     </div>
                 </div>
 

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #2c3e50;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .resumo {
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+        }
+        .resumo p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th {
+            background-color: #2c3e50;
+            color: white;
+            padding: 8px;
+            text-align: left;
+        }
+        td {
+            border-bottom: 1px solid #ddd;
+            padding: 8px;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            color: #777;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Relatório de Estoque</h1>
+    <p>Gerado em: {% now "d/m/Y H:i" %} | Usuário: {{ user.username }}</p>
+
+    <div class="resumo">
+        <p><strong>Total de Produtos Cadastrados:</strong> {{ produtos.count }}</p>
+        <p><strong>Quantidade Total de Itens:</strong> {{ total_itens }}</p>
+        <p><strong>Valor Patrimonial Total:</strong> R$ {{ valor_estoque }}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Produto</th>
+                <th>Categoria</th>
+                <th style="text-align: center;">Qtd</th>
+                <th style="text-align: right;">Custo (R$)</th>
+                <th style="text-align: right;">Venda (R$)</th>
+                <th style="text-align: right;">Total (R$)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in produtos %}
+            <tr>
+                <td>{{ p.nome }}</td>
+                <td>{{ p.categoria|default:"-" }}</td>
+                <td style="text-align: center;">{{ p.quantidade }}</td>
+                <td style="text-align: right;">{{ p.preco_custo }}</td>
+                <td style="text-align: right;">{{ p.preco_venda }}</td>
+                <td style="text-align: right;">
+                    <!-- Cálculo simples no template só para exibição -->
+                    {% widthratio p.quantidade 1 p.preco_venda %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Sistema de Gestão de Estoque - Documento Interno
+    </div>
+
+</body>
+</html>

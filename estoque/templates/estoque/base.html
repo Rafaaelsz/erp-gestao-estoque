@@ -5,9 +5,45 @@
     <title>{% block title %}Gestão de Estoque{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gray-100 font-sans antialiased">
+    {% if messages %}
+        <div class="fixed top-5 right-5 z-50 w-full max-w-sm space-y-2">
+            {% for message in messages %}
+                <div class="flex items-center p-4 mb-4 text-white rounded-lg shadow-lg 
+                    {% if message.tags == 'success' %} bg-green-500 
+                    {% elif message.tags == 'error' %} bg-red-500 
+                    {% elif message.tags == 'warning' %} bg-yellow-500 
+                    {% else %} bg-blue-500 {% endif %}" role="alert">
+                    
+                    <!-- Ícones baseados no tipo -->
+                    <div class="ml-3 text-sm font-medium">
+                        {% if message.tags == 'success' %}<i class="fas fa-check-circle mr-2"></i>{% endif %}
+                        {% if message.tags == 'error' %}<i class="fas fa-times-circle mr-2"></i>{% endif %}
+                        {% if message.tags == 'warning' %}<i class="fas fa-exclamation-triangle mr-2"></i>{% endif %}
+                        {{ message }}
+                    </div>
+                    
+                    <!-- Botão Fechar -->
+                    <button type="button" class="ml-auto -mx-1.5 -my-1.5 bg-transparent text-white rounded-lg p-1.5 hover:bg-white/20 inline-flex h-8 w-8 justify-center items-center" onclick="this.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+        <script>
+            setTimeout(function() {
+                const alerts = document.querySelectorAll('[role="alert"]');
+                alerts.forEach(alert => {
+                    alert.style.transition = "opacity 0.5s ease";
+                    alert.style.opacity = "0";
+                    setTimeout(() => alert.remove(), 500);
+                });
+            }, 4000);
+        </script>
+    {% endif %}
 
     <div class="flex h-screen overflow-hidden">
 
