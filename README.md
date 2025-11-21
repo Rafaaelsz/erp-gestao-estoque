@@ -70,15 +70,3 @@ python manage.py runserver
 
 
 Acesse: http://127.0.0.1:8000
-
-🌐 Deploy
-
-O projeto está configurado para deploy no Render.com utilizando gunicorn e whitenoise para arquivos estáticos.
-
-Conecte o repo no Render.
-
-Build Command: ./build.sh
-
-Start Command: gunicorn setup.wsgi:application
-
-Desenvolvido por [Seu Nome] 🚀
