@@ -139,22 +139,30 @@ JAZZMIN_SETTINGS = {
 }
 
 JAZZMIN_SETTINGS = {
-    # Títulos e Textos
     "site_title": "Sistema Estoque",
     "site_header": "Gestão de Estoque",
     "site_brand": "Meu Estoque",
     "welcome_sign": "Bem-vindo ao Painel de Controle",
+    "copyright": "Sua Empresa Ltda",
     "search_model": "estoque.Produto",
     "show_sidebar": True,
     "navigation_expanded": True,
+    "show_ui_builder": False,
 
     "icons": {
         "auth": "fas fa-users-cog",
         "auth.user": "fas fa-user",
-        "estoque.Produto": "fas fa-box",
+        "auth.Group": "fas fa-users",
+        "estoque.Produto": "fas fa-box-open",
         "estoque.Categoria": "fas fa-tags",
         "estoque.Movimentacao": "fas fa-exchange-alt",
     },
+
+    "topmenu_links": [
+        {"name": "Voltar ao Site", "url": "dashboard",
+            "permissions": ["auth.view_user"]},
+        {"model": "auth.User"},
+    ],
 }
 
 JAZZMIN_UI_TWEAKS = {
